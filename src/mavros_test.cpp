@@ -11,15 +11,15 @@
 #include <mavros_msgs/GlobalPositionTarget.h>
 
 mavros_msgs::State current_state;
-float local_pose_enu_x = 0;
-float local_pose_enu_y = 0;
-float local_pose_enu_z = 0;
+double local_pose_enu_x = 0;
+double local_pose_enu_y = 0;
+double local_pose_enu_z = 0;
 
 // setpoints
-float acceptance_radius = 0.25;
+double acceptance_radius = 0.25;
 const int num_of_wps = 4;
 
-float setpoint_array[num_of_wps][3] = {
+double setpoint_array[num_of_wps][3] = {
     {0.8, 0.7, 0.7},
     {2.2, 0.7, 0.7},
     {2.2, 1.4, 0.7},
@@ -41,9 +41,9 @@ void local_pos_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
     local_pose_enu_z = msg->pose.position.z;
 
     // Transform position to NED
-    local_pose_ned_x = local_pose_enu_y;
-    local_pose_ned_y = local_pose_enu_x;
-    local_pose_ned_z = -local_pose_enu_z;
+    double local_pose_ned_x = local_pose_enu_y;
+    double local_pose_ned_y = local_pose_enu_x;
+    double local_pose_ned_z = -local_pose_enu_z;
 
     //ROS_INFO("Current position: (%g %g %g)", local_pose_x, local_pose_y, local_pose_z);
 }
@@ -67,8 +67,8 @@ int main(int argc, char **argv)
 
     ros::Subscriber local_pos_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",1,local_pos_callback);
 
-    ros::Publisher wp_pub = nh.advertise<std_msgs::int64>("/wp_num", 1);
-    ros::Publisher distance_pub = nh.advertise<std_msgs::float64>("/wp_dist", 1);
+    ros::Publisher wp_pub = nh.advertise<std_msgs::Int64>("/wp_num", 1);
+    ros::Publisher distance_pub = nh.advertise<std_msgs::Float64>("/wp_dist", 1);
 
 
     //the setpoint publishing rate MUST be faster than 2Hz
@@ -175,12 +175,12 @@ int main(int argc, char **argv)
         target_local_pub.publish(target);
 
         //publish number of waypoint
-        std_msgs::int64 wp_number;
+        std_msgs::Int64 wp_number;
         wp_number = wp_counter;
         wp_pub.publish(wp_number);
 
         //publish distance to waypoint
-        std_msgs::float64 distance;
+        std_msgs::Float64 distance;
         distance = wp_distance;
         distance_pub.publish(distance);
 
