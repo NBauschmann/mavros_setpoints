@@ -9,11 +9,17 @@
 #include <mavros_msgs/Trajectory.h>
 #include <mavros_msgs/PositionTarget.h>
 #include <mavros_msgs/GlobalPositionTarget.h>
+#include <std_msgs/Int64.h>
+#include <std_msgs/Float64.h>
 
 mavros_msgs::State current_state;
 double local_pose_enu_x = 0;
 double local_pose_enu_y = 0;
 double local_pose_enu_z = 0;
+
+double local_pose_ned_x = 0;
+double local_pose_ned_y = 0;
+double local_pose_ned_z = 0;
 
 // setpoints
 double acceptance_radius = 0.25;
@@ -53,16 +59,14 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "offb_node");
     ros::NodeHandle nh;
 
-    ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
-            ("mavros/state", 10, state_cb);
-    ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>
-            ("mavros/setpoint_position/local", 10);
+    ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("mavros/state", 10, state_cb);
+    ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 10);
     ros::Publisher target_local_pub = nh.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
-   // ros::Publisher target_global_pub = nh.advertise<mavros_msgs::GlobalPositionTarget>("mavros/setpoint_raw/global", 2);
-    ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>
-            ("mavros/cmd/arming");
-    ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
-            ("mavros/set_mode");
+
+    // ros::Publisher target_global_pub = nh.advertise<mavros_msgs::GlobalPositionTarget>("mavros/setpoint_raw/global", 2);
+
+    ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
+    ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("mavros/set_mode");
     ros::ServiceClient takeoff_client = nh.serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/takeoff");
 
     ros::Subscriber local_pos_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",1,local_pos_callback);
@@ -176,18 +180,13 @@ int main(int argc, char **argv)
 
         //publish number of waypoint
         std_msgs::Int64 wp_number;
-        wp_number = wp_counter;
+        wp_number.data = wp_counter;
         wp_pub.publish(wp_number);
 
         //publish distance to waypoint
         std_msgs::Float64 distance;
-        distance = wp_distance;
+        distance.data = wp_distance;
         distance_pub.publish(distance);
-
-
-
-
-
 
         //   counter=counter+0.02;
 
