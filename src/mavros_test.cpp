@@ -11,9 +11,9 @@
 #include <mavros_msgs/GlobalPositionTarget.h>
 
 mavros_msgs::State current_state;
-double local_pose_x = 0;
-double local_pose_y = 0;
-double local_pose_z = 0;
+float local_pose_enu_x = 0;
+float local_pose_enu_y = 0;
+float local_pose_enu_z = 0;
 
 // setpoints
 float acceptance_radius = 0.25;
@@ -35,9 +35,16 @@ void state_cb(const mavros_msgs::State::ConstPtr& msg){
 }
 
 void local_pos_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
-    local_pose_x = msg->pose.position.x;
-    local_pose_y = msg->pose.position.y;
-    local_pose_z = msg->pose.position.z;
+
+    local_pose_enu_x = msg->pose.position.x;
+    local_pose_enu_y = msg->pose.position.y;
+    local_pose_enu_z = msg->pose.position.z;
+
+    // Transform position to NED
+    local_pose_ned_x = local_pose_enu_y;
+    local_pose_ned_y = local_pose_enu_x;
+    local_pose_ned_z = -local_pose_enu_z;
+
     //ROS_INFO("Current position: (%g %g %g)", local_pose_x, local_pose_y, local_pose_z);
 }
 
@@ -60,6 +67,10 @@ int main(int argc, char **argv)
 
     ros::Subscriber local_pos_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",1,local_pos_callback);
 
+    ros::Publisher wp_pub = nh.advertise<std_msgs::int64>("/wp_num", 1);
+    ros::Publisher distance_pub = nh.advertise<std_msgs::float64>("/wp_dist", 1);
+
+
     //the setpoint publishing rate MUST be faster than 2Hz
     ros::Rate rate(4.0);
 
@@ -71,6 +82,7 @@ int main(int argc, char **argv)
     ROS_INFO("Connection established");
     geometry_msgs::PoseStamped pose;
     mavros_msgs::PositionTarget target;
+
   //  mavros_msgs::GlobalPositionTarget globalTarget;
     pose.pose.position.x = 0;
     pose.pose.position.y = 0;
@@ -133,8 +145,10 @@ int main(int argc, char **argv)
         double setpoint_y = setpoint_array[wp_counter][1];
         double setpoint_z = setpoint_array[wp_counter][2];
 
+        double wp_distance = sqrt((local_pose_ned_x-setpoint_x) *  (local_pose_ned_x-setpoint_x) + (local_pose_ned_y-setpoint_y) * (local_pose_ned_y-setpoint_y));
 
-        if( sqrt((local_pose_x-setpoint_x) *  (local_pose_x-setpoint_x) + (local_pose_y-setpoint_y) * (local_pose_y-setpoint_y)) < acceptance_radius) {
+
+        if( wp_distance < acceptance_radius) {
 
             wp_counter++;
             wp_counter %= num_of_wps; //wrap around to go from last setpoint -> first setpoint
@@ -156,28 +170,47 @@ int main(int argc, char **argv)
         target.position.x= setpoint_x;
         target.position.y= setpoint_y;
         target.position.z= setpoint_z;
-    //   counter=counter+0.02;
 
-     //Global Test
-  /*    globalTarget.coordinate_frame=mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_INT;
-      globalTarget.type_mask= mavros_msgs::GlobalPositionTarget::IGNORE_VX |
-                      		  mavros_msgs::GlobalPositionTarget::IGNORE_VY |
-      						  mavros_msgs::GlobalPositionTarget::IGNORE_VZ |
-      						  mavros_msgs::GlobalPositionTarget::IGNORE_AFX |
-      						  mavros_msgs::GlobalPositionTarget::IGNORE_AFY |
-      						  mavros_msgs::GlobalPositionTarget::IGNORE_AFZ |
-      						  mavros_msgs::GlobalPositionTarget::FORCE |
-      						  mavros_msgs::GlobalPositionTarget::IGNORE_YAW |
-      						  mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE ;
+        //publish next waypoint
+        target_local_pub.publish(target);
 
-      globalTarget.header.stamp=ros::Time::now();
-      globalTarget.latitude =2.00;
-      globalTarget.longitude= 5.00;
-      globalTarget.altitude= 1.00;
+        //publish number of waypoint
+        std_msgs::int64 wp_number;
+        wp_number = wp_counter;
+        wp_pub.publish(wp_number);
 
-      target_global_pub.publish(globalTarget);*/
-     // local_pos_pub.publish(pose);
-      target_local_pub.publish(target);
+        //publish distance to waypoint
+        std_msgs::float64 distance;
+        distance = wp_distance;
+        distance_pub.publish(distance);
+
+
+
+
+
+
+        //   counter=counter+0.02;
+
+         //Global Test
+      /*    globalTarget.coordinate_frame=mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_INT;
+          globalTarget.type_mask= mavros_msgs::GlobalPositionTarget::IGNORE_VX |
+                                      mavros_msgs::GlobalPositionTarget::IGNORE_VY |
+                                                      mavros_msgs::GlobalPositionTarget::IGNORE_VZ |
+                                                      mavros_msgs::GlobalPositionTarget::IGNORE_AFX |
+                                                      mavros_msgs::GlobalPositionTarget::IGNORE_AFY |
+                                                      mavros_msgs::GlobalPositionTarget::IGNORE_AFZ |
+                                                      mavros_msgs::GlobalPositionTarget::FORCE |
+                                                      mavros_msgs::GlobalPositionTarget::IGNORE_YAW |
+                                                      mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE ;
+
+          globalTarget.header.stamp=ros::Time::now();
+          globalTarget.latitude =2.00;
+          globalTarget.longitude= 5.00;
+          globalTarget.altitude= 1.00;
+
+          target_global_pub.publish(globalTarget);*/
+         // local_pos_pub.publish(pose);
+
       //trajectory_desired_pub(traject);
 
     //takeoff_client.call(srv_takeoff);
