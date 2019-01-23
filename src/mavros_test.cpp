@@ -47,9 +47,9 @@ void local_pos_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
     local_pose_enu_z = msg->pose.position.z;
 
     // Transform position to NED
-    double local_pose_ned_x = local_pose_enu_y;
-    double local_pose_ned_y = local_pose_enu_x;
-    double local_pose_ned_z = -local_pose_enu_z;
+    local_pose_ned_x = local_pose_enu_y;
+    local_pose_ned_y = local_pose_enu_x;
+    local_pose_ned_z = -local_pose_enu_z;
 
     //ROS_INFO("Current position: (%g %g %g)", local_pose_x, local_pose_y, local_pose_z);
 }
