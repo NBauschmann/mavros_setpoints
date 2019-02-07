@@ -193,16 +193,16 @@ int main(int argc, char **argv)
 
         //publish next waypoint transformed in ned for visualization
         geometry_msgs::PoseStamped wp_pose;
-        wp_pose.position.x = setpoint_y;
-        wp_pose.position.y = setpoint_x;
-        wp_pose.position.z = -setpoint_z;
+        wp_pose.pose.position.x = setpoint_y;
+        wp_pose.pose.position.y = setpoint_x;
+        wp_pose.pose.position.z = -setpoint_z;
         wp_pose_pub.publish(wp_pose);
 
         //publish local position in ned for visualization
-        geometry_msgs::PositionStamped lpos_ned_msg;
-        lpos_ned_msg.position.x = local_pose_ned_x;
-        lpos_ned_msg.position.y = local_pose_ned_y;
-        lpos_ned_msg.position.z = local_pose_ned_z;
+        geometry_msgs::PoseStamped lpos_ned_msg;
+        lpos_ned_msg.pose.position.x = local_pose_ned_x;
+        lpos_ned_msg.pose.position.y = local_pose_ned_y;
+        lpos_ned_msg.pose.position.z = local_pose_ned_z;
         lpose_ned_pub.publish(lpos_ned_msg);
 
         //   counter=counter+0.02;
