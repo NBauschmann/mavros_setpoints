@@ -193,6 +193,8 @@ int main(int argc, char **argv)
 
         //publish next waypoint transformed in ned for visualization
         geometry_msgs::PoseStamped wp_pose;
+        wp_pose.header.frame_id = "map";
+        wp_pose.header.stamp = ros::Time::now();
         wp_pose.pose.position.x = setpoint_y;
         wp_pose.pose.position.y = setpoint_x;
         wp_pose.pose.position.z = -setpoint_z;
@@ -200,6 +202,8 @@ int main(int argc, char **argv)
 
         //publish local position in ned for visualization
         geometry_msgs::PoseStamped lpos_ned_msg;
+        lpos_ned_msg.header.frame_id = "map";
+        lpos_ned_msg.header.stamp=ros::Time::now();
         lpos_ned_msg.pose.position.x = local_pose_ned_x;
         lpos_ned_msg.pose.position.y = local_pose_ned_y;
         lpos_ned_msg.pose.position.z = local_pose_ned_z;
