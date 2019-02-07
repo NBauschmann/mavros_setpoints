@@ -63,6 +63,7 @@ int main(int argc, char **argv)
     ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 10);
     ros::Publisher target_local_pub = nh.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
 
+
     // ros::Publisher target_global_pub = nh.advertise<mavros_msgs::GlobalPositionTarget>("mavros/setpoint_raw/global", 2);
 
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
@@ -73,6 +74,8 @@ int main(int argc, char **argv)
 
     ros::Publisher wp_pub = nh.advertise<std_msgs::Int64>("/wp_num", 1);
     ros::Publisher distance_pub = nh.advertise<std_msgs::Float64>("/wp_dist", 1);
+    ros::Publisher wp_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/wp_pose_ned", 1);
+    ros::Publisher lpose_ned_pub = nh.advertise<geometry_msgs::PoseStamped>("/local_pose_ned", 1);
 
 
     //the setpoint publishing rate MUST be faster than 2Hz
@@ -187,6 +190,20 @@ int main(int argc, char **argv)
         std_msgs::Float64 distance;
         distance.data = wp_distance;
         distance_pub.publish(distance);
+
+        //publish next waypoint transformed in ned for visualization
+        geometry_msgs::PoseStamped wp_pose;
+        wp_pose.position.x = setpoint_y;
+        wp_pose.position.y = setpoint_x;
+        wp_pose.position.z = -setpoint_z;
+        wp_pose_pub.publish(wp_pose);
+
+        //publish local position in ned for visualization
+        geometry_msgs::PositionStamped lpos_ned_msg;
+        lpos_ned_msg.position.x = local_pose_ned_x;
+        lpos_ned_msg.position.y = local_pose_ned_y;
+        lpos_ned_msg.position.z = local_pose_ned_z;
+        lpose_ned_pub.publish(lpos_ned_msg);
 
         //   counter=counter+0.02;
 
