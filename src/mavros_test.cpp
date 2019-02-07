@@ -195,9 +195,9 @@ int main(int argc, char **argv)
         geometry_msgs::PoseStamped wp_pose;
         wp_pose.header.frame_id = "map";
         wp_pose.header.stamp = ros::Time::now();
-        wp_pose.pose.position.x = setpoint_y;
-        wp_pose.pose.position.y = setpoint_x;
-        wp_pose.pose.position.z = -setpoint_z;
+        wp_pose.pose.position.x = setpoint_x;
+        wp_pose.pose.position.y = setpoint_y;
+        wp_pose.pose.position.z = setpoint_z;
         wp_pose_pub.publish(wp_pose);
 
         //publish local position in ned for visualization
