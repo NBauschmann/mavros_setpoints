@@ -16,10 +16,18 @@ mavros_msgs::State current_state;
 double local_pose_enu_x = 0;
 double local_pose_enu_y = 0;
 double local_pose_enu_z = 0;
+double local_pose_enu_qw = 0;
+double local_pose_enu_qx = 0;
+double local_pose_enu_qy = 0;
+double local_pose_enu_qz = 0;
 
 double local_pose_ned_x = 0;
 double local_pose_ned_y = 0;
 double local_pose_ned_z = 0;
+double local_pose_ned_qw = 0;
+double local_pose_ned_qx = 0;
+double local_pose_ned_qy = 0;
+double local_pose_ned_qz = 0;
 
 // setpoints
 double acceptance_radius = 0.25;
