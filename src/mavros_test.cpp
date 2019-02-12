@@ -46,10 +46,22 @@ void local_pos_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
     local_pose_enu_y = msg->pose.position.y;
     local_pose_enu_z = msg->pose.position.z;
 
+    local_pose_enu_qw = msg->pose.orientation.w;
+    local_pose_enu_qx = msg->pose.orientation.x;
+    local_pose_enu_qy = msg->pose.orientation.y;
+    local_pose_enu_qz = msg->pose.orientation.z;
+
     // Transform position to NED
     local_pose_ned_x = local_pose_enu_y;
     local_pose_ned_y = local_pose_enu_x;
     local_pose_ned_z = -local_pose_enu_z;
+
+    // not sure if this transformation is working (apparently NED -> ENU: (w x y z) -> (y x -z w) so ENU -> NED: (w x y z) -> (z x w -y) ??)
+    local_pose_ned_qw = local_pose_enu_qz;
+    local_pose_ned_qx = local_pose_enu_qx;
+    local_pose_ned_qy = local_pose_enu_qw;
+    local_pose_ned_qz = - local_pose_enu_qy;
+
 
     //ROS_INFO("Current position: (%g %g %g)", local_pose_x, local_pose_y, local_pose_z);
 }
@@ -200,13 +212,19 @@ int main(int argc, char **argv)
         wp_pose.pose.position.z = setpoint_z;
         wp_pose_pub.publish(wp_pose);
 
-        //publish local position in ned for visualization
+        //publish local position in NED for visualization
         geometry_msgs::PoseStamped lpos_ned_msg;
         lpos_ned_msg.header.frame_id = "map";
         lpos_ned_msg.header.stamp=ros::Time::now();
         lpos_ned_msg.pose.position.x = local_pose_ned_x;
         lpos_ned_msg.pose.position.y = local_pose_ned_y;
         lpos_ned_msg.pose.position.z = local_pose_ned_z;
+
+        lpos_ned_msg.pose.orientation.w = local_pose_ned_qw;
+        lpos_ned_msg.pose.orientation.x = local_pose_ned_qx;
+        lpos_ned_msg.pose.orientation.y = local_pose_ned_qy;
+        lpos_ned_msg.pose.orientation.z = local_pose_ned_qz;
+
         lpose_ned_pub.publish(lpos_ned_msg);
 
         //   counter=counter+0.02;
